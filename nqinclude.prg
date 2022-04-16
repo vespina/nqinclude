@@ -48,6 +48,9 @@ PROCEDURE NQInclude(pcResourceID)
 			EXIT
 		ENDIF
 		STRTOFILE(cSource, cFileName)
+		IF LOWER(JUSTEXT(cFileName)) == "prg"
+			COMPILE (cFileName)
+		ENDIF
 	ENDFOR
 	RETURN lResult
 
