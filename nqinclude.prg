@@ -27,11 +27,10 @@ PROCEDURE NQInclude(pcResourceID)
 	   CASE pcResourceId = "json"
 	        cURLs = "https://raw.githubusercontent.com/vespina/json/main/json.PRG"
     
+       OTHERWISE
+			MESSAGEBOX("Invalid resource id '" + pcResourceID + "'", 0 + 48, "NQInclude")
+			RETURN .F.
 	ENDCASE
-	IF EMPTY(cUrl)
-		MESSAGEBOX("Invalid resource id '" + pcResourceID + "'", 0 + 48, "NQInclude")
-		RETURN .F.
-	ENDIF
 	LOCAL ARRAY aSources[1]
 	LOCAL nCount,i,cFileName,cUrl,cSource,lResult
 	nCount = ALINES(aSources, cURLs)
