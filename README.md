@@ -1,4 +1,4 @@
-# nqinclude
+# nqinclude.prg
 Library to include various public libraries
 
 
