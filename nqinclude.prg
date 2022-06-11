@@ -3,56 +3,88 @@
 * LIBRARY TO INCLUDE VARIOUS PUBLIC LIBRARIES
 *
 * AUTHOR: VICTOR ESPINA
-*
+* VERSION: 1.1
 *
 * USAGE:
 * SET PROC TO NQInclude
 *
 * bool = NQInclude("resourceId")
 *
+*
+*
+* AVAILABLE RESOURCES:
+*
+* json				JSON parser
+* base64Helper		Base64 encoder/decoder
+* vfplegacy			Support for legacy versions of VFP
+* mail			    Helper library to send emails from VFP
+* toolbox           Support library with multiples useful functions
+*
+
+#DEFINE NQ_VERSION 	"1.1"
 
 
-PROCEDURE NQInclude(pcResourceID)
+	
+PROCEDURE NQInclude(pcResourceID, plAutoLoad)
 	LOCAL cUrls,cCRLF
 	cUrls = ""
 	cCRLF = CHR(13)+CHR(10)
+	IF PCOUNT() = 1
+		plAutoLoad = .T.
+	ENDIF
+	pcResourceID = LOWER(pcResourceID)
 	DO CASE
-	   CASE pcResourceId = "vfplegacy"
-	        cURLs = "https://raw.githubusercontent.com/vespina/vfplegacy/main/vfplegacy.prg" + cCRLF + ;
-	                "https://raw.githubusercontent.com/vespina/vfplegacy/main/vfplegacy.h"
+	   CASE pcResourceID == "@@version"
+	   	    RETURN NQ_VERSION
+	   	    
+	   CASE pcResourceId == "vfplegacy"
+	        cURLs = "https://raw.githubusercontent.com/vespina/vfplegacy/main/vfplegacy.h" + cCRLF + ;
+	                "https://raw.githubusercontent.com/vespina/vfplegacy/main/vfplegacy.prg"
 	        
-	   CASE pcResourceId = "base64Helper"
+	   CASE pcResourceId == "base64helper"
 	        cURLs = "https://raw.githubusercontent.com/vespina/base64helper/main/base64helper.PRG"
 
 	   CASE pcResourceId = "json"
 	        cURLs = "https://raw.githubusercontent.com/vespina/json/main/json.PRG"
     
+	   CASE pcResourceId = "mail"
+	        cURLs = "https://raw.githubusercontent.com/vespina/mail/main/mail.PRG"
+
+	   CASE pcResourceId = "toolbox"
+	        cURLs = "https://raw.githubusercontent.com/vespina/toolbox/main/toolbox.PRG"
+    
        OTHERWISE
 			MESSAGEBOX("Invalid resource id '" + pcResourceID + "'", 0 + 48, "NQInclude")
 			RETURN .F.
 	ENDCASE
+	
 	LOCAL ARRAY aSources[1]
-	LOCAL nCount,i,cFileName,cUrl,cSource,lResult
+	LOCAL nCount,i,cLibrary,cFileName,cUrl,cSource,lResult
 	nCount = ALINES(aSources, cURLs)
 	lResult = .T.
 	FOR i = 1 TO nCount
 		cUrl = aSources[i]
+		cLibrary = JUSTSTEM(cUrl)
 		cFileName = JUSTFNAME(cUrl)
-		IF FILE(cFileName)
-			RETURN
+		IF !FILE(cFileName)
+			cSource = GetURL(cUrl)
+			IF EMPTY(cSource)
+				MESSAGEBOX("Resource '" + cUrl + "' is not available at this time", 0 + 48, "NQInclude")
+				lResult = .F.
+				EXIT
+			ENDIF
+			STRTOFILE(cSource, cFileName)
+			IF LOWER(JUSTEXT(cFileName)) == "prg"
+				COMPILE (cFileName)
+			ENDIF
 		ENDIF
-		cSource = GetURL(cUrl)
-		IF EMPTY(cSource)
-			MESSAGEBOX("Resource '" + cUrl + "' is not available at this time", 0 + 48, "NQInclude")
-			lResult = .F.
-			EXIT
-		ENDIF
-		STRTOFILE(cSource, cFileName)
-		IF LOWER(JUSTEXT(cFileName)) == "prg"
-			COMPILE (cFileName)
+		
+		IF plAutoLoad AND UPPER(JUSTEXT(cFileName)) == "PRG"
+			SET PROCEDURE TO (cLibrary) ADDITIVE
 		ENDIF
 	ENDFOR
 	RETURN lResult
+
 
 
 

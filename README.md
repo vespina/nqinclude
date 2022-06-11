@@ -45,4 +45,23 @@ Add this code to your main program:
     ENDIF
     
     
+### TO INCLUDE A LIBRARY WITHOUT LOADING IT ON MEMORY
+    
+    IF NOT NQInclude("json", .F.)
+      CANCEL
+    ENDIF
+    
+    
+### TO GET CURRENT VERSION OF NQInclude
+
+    ?NQInclude("@@VERSION")
+    
+        
+### TO DOWNLOAD LATEST VERSION OF NQInclude
+
+    CLOSE ALL
+    DELETE FILE nqinclude.prg
+    checkForNQInclude()
+    
+    
 Check the source code of NQInclude for a list of available libraries
