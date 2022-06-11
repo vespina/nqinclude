@@ -101,6 +101,16 @@ PROCEDURE NQInclude(pcResourceID, plAutoLoad)
 
 
 
+PROCEDURE NQRequire(pcResourceID, plAutoLoad)
+	IF PCOUNT() < 2
+		plAutoLoad = .T.
+	ENDIF
+	IF NOT NQInclude(pcResourceId, plAutoLoad)
+		CANCEL
+	ENDIF
+	RETURN
+
+
 
 ***********************************************
 ** GETURL.PRG
