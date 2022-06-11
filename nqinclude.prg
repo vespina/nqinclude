@@ -32,7 +32,13 @@ PROCEDURE NQInclude(pcResourceID, plAutoLoad)
 	IF PCOUNT() = 1
 		plAutoLoad = .T.
 	ENDIF
-	pcResourceID = LOWER(pcResourceID)
+		
+	IF _VFP.StartMode <> 0 
+		MESSAGEBOX("This program must be called from the VFP's IDE.",16,"NQINCLUDE.PRG")
+		CANCEL
+	ENDIF
+		
+	pcResourceID = LOWER(pcResourceID)	
 	DO CASE
 	   CASE pcResourceID == "@@version"
 	   	    RETURN NQ_VERSION
@@ -59,9 +65,10 @@ PROCEDURE NQInclude(pcResourceID, plAutoLoad)
 	ENDCASE
 	
 	LOCAL ARRAY aSources[1]
-	LOCAL nCount,i,cLibrary,cFileName,cUrl,cSource,lResult
+	LOCAL nCount,i,cLibrary,cFileName,cUrl,cSource,lResult,lDownloaded
 	nCount = ALINES(aSources, cURLs)
 	lResult = .T.
+	lDownloaded = .F.
 	FOR i = 1 TO nCount
 		cUrl = aSources[i]
 		cLibrary = JUSTSTEM(cUrl)
@@ -77,12 +84,19 @@ PROCEDURE NQInclude(pcResourceID, plAutoLoad)
 			IF LOWER(JUSTEXT(cFileName)) == "prg"
 				COMPILE (cFileName)
 			ENDIF
+		    lDownloaded = .F.
 		ENDIF
 		
-		IF plAutoLoad AND UPPER(JUSTEXT(cFileName)) == "PRG"
+		IF plAutoLoad AND UPPER(JUSTEXT(cFileName)) == "PRG" AND ATC(cLibrary, SET("PROCEDURE")) = 0 
 			SET PROCEDURE TO (cLibrary) ADDITIVE
 		ENDIF
 	ENDFOR
+		
+	DO CASE
+	   CASE pcResourceId == "vfplegacy" AND lDownloaded AND lResult
+   	        MESSAGEBOX("The library VFPLEGACY.PRG has been automatically downloaded. Please recompile all your PRG files that depends on this library.",48,"NQINCLUDE.PRG")
+	        CANCEL
+	ENDCASE
 	RETURN lResult
 
 
@@ -92,25 +106,24 @@ PROCEDURE NQInclude(pcResourceID, plAutoLoad)
 ** GETURL.PRG
 ** Devuelve el contenido de un URL dado.
 **
-** Versión: 1.0
+** Versi?1.0
 **
 ** Autor: Victor Espina (vespinas@cantv.net)
 **        Walter Valle (wvalle@develcomp.com)
-**        (basado en código original de Pablo Almunia)
+**        (basado en c?o original de Pablo Almunia)
 *
 ** Fecha: 20-Agosto-2003
 **
 **
-** Sintáxis:
+** Sint?s:
 ** cData = GetURL(pcURL[,plVerbose])
 **
 ** Donde:
 ** cData	 Contenido (texto o binario) del recurso 
-**			 indicado en cURL. Si ocurre algún error
-**           se devolverá la cadena vacia.
-** pcURL	 Dirección URL del recurso o archivo a obtener
-** plVerbose Opcional. Si se establece en True, se mostrará
-**		     información visual sobre el avance del proceso.
+**			 indicado en cURL. Si ocurre alg?ror
+**           se devolver?a cadena vacia.
+** pcURL	 Direcci?RL del recurso o archivo a obtener
+** plVerbose Opcional. Si se establece en True, se mostrar?*		     informaci?isual sobre el avance del proceso.
 **
 ** Ejemplo:
 ** cHTML=GetURL("http://www.portalfox.com")
@@ -172,7 +185,7 @@ LPARAMETER pcURL,plVerbose
 	LONG    @lpNumberOfBytesRead
 	
 	
- *-- Se establece la conexión con internet
+ *-- Se establece la conexi?on internet
  *
  IF plVerbose
   WAIT "Opening Internet connection..." WINDOW NOWAIT
@@ -186,7 +199,7 @@ LPARAMETER pcURL,plVerbose
  ENDIF
  
  
- *-- Se establece la conexión con el recurso
+ *-- Se establece la conexi?on el recurso
  *
  IF plVerbose
   WAIT "Opening connection to URL..." WINDOW NOWAIT
@@ -234,7 +247,7 @@ LPARAMETER pcURL,plVerbose
  ENDIF
 
  
- *-- Se cierra la conexión a Internet
+ *-- Se cierra la conexi? Internet
  *
  InternetCloseHandle( nInetHnd )
 
