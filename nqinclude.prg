@@ -3,7 +3,7 @@
 * LIBRARY TO INCLUDE VARIOUS PUBLIC LIBRARIES
 *
 * AUTHOR: VICTOR ESPINA
-* VERSION: 1.1
+* VERSION: 1.2
 *
 * USAGE:
 * SET PROC TO NQInclude
@@ -21,7 +21,7 @@
 * toolbox           Support library with multiples useful functions
 *
 
-#DEFINE NQ_VERSION 	"1.1"
+#DEFINE NQ_VERSION 	"1.2"
 
 
 	
@@ -31,11 +31,6 @@ PROCEDURE NQInclude(pcResourceID, plAutoLoad)
 	cCRLF = CHR(13)+CHR(10)
 	IF PCOUNT() = 1
 		plAutoLoad = .T.
-	ENDIF
-		
-	IF _VFP.StartMode <> 0 
-		MESSAGEBOX("This program must be called from the VFP's IDE.",16,"NQINCLUDE.PRG")
-		CANCEL
 	ENDIF
 		
 	pcResourceID = LOWER(pcResourceID)	
@@ -73,7 +68,7 @@ PROCEDURE NQInclude(pcResourceID, plAutoLoad)
 		cUrl = aSources[i]
 		cLibrary = JUSTSTEM(cUrl)
 		cFileName = JUSTFNAME(cUrl)
-		IF !FILE(cFileName)
+		IF !FILE(cFileName) AND _VFP.StartMode = 0 
 			cSource = GetURL(cUrl)
 			IF EMPTY(cSource)
 				MESSAGEBOX("Resource '" + cUrl + "' is not available at this time", 0 + 48, "NQInclude")
